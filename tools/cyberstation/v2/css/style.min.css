@@ -1,0 +1,831 @@
+/* ========================================
+   CSS Variables - single dark theme
+   ======================================== */
+:root {
+    /* Native controls (scrollbars, form popups) render dark */
+    color-scheme: dark;
+
+    /* Blue-black: near-black page with a navy hint, lifted surfaces, slate text */
+    --light-bg: #090d15;
+    --card-bg: #161f2e;
+    --border: #222c3d;
+    --text: #e2e8f0;
+    --text-count: #94a3b8;
+    --scrollbar: #2a3547;
+
+    /* Neutral accent: light grey fills with black text; --link is text on surfaces */
+    --primary: #e0e0e0;
+    --on-primary: #000000;
+    --link: #f0f0f0;
+    --focus-ring: rgba(255, 255, 255, 0.5);
+    --success: #047857;
+    --on-success: #ffffff;
+    --danger: #dc2626;
+    /* Red wash for destructive-ish actions (Clear All), same translucent style as the tags */
+    --danger-bg: rgba(248, 113, 113, 0.14);
+    --danger-bg-hover: rgba(248, 113, 113, 0.24);
+    --danger-fg: #fca5a5;
+    --danger-fg-hover: #fecaca;
+    /* Neutral translucent fills for chips and quiet buttons */
+    --chip-bg: rgba(255, 255, 255, 0.08);
+    --chip-hover: rgba(255, 255, 255, 0.14);
+
+    /* Tag groups: translucent washes of the group color; a stronger wash plus outline when active */
+    --technique-color: #60a5fa;
+    --technique-bg: rgba(96, 165, 250, 0.16);
+    --technique-fg: #93c5fd;
+    --technique-active-bg: rgba(96, 165, 250, 0.32);
+    --technique-active-fg: #bfdbfe;
+    --category-color: #34d399;
+    --category-bg: rgba(52, 211, 153, 0.16);
+    --category-fg: #6ee7b7;
+    --category-active-bg: rgba(52, 211, 153, 0.32);
+    --category-active-fg: #a7f3d0;
+    --target-color: #94a3b8;
+    --target-bg: rgba(255, 255, 255, 0.08);
+    --target-fg: #d4d4d4;
+    --target-active-bg: rgba(255, 255, 255, 0.2);
+    --target-active-fg: #f1f5f9;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.7);
+
+    /* Type scale: nothing below 12px */
+    --fs-xs: 0.75rem;
+    --fs-sm: 0.8125rem;
+    --fs-md: 0.875rem;
+    --fs-lg: 1rem;
+    --fs-xl: 1.25rem;
+
+    /* Radii: controls, cards/panels, pills */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-pill: 999px;
+
+    /* Motion: one easing curve, two speeds */
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --dur-fast: 150ms;
+    --dur: 250ms;
+
+    /* Lets card descriptions animate to and from their natural height where supported */
+    interpolate-size: allow-keywords;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Minimal reset: the few base styles Bootstrap used to provide */
+button,
+input {
+    margin: 0;
+    font: inherit;
+    color: inherit;
+}
+
+h4,
+h6,
+p {
+    margin-top: 0;
+}
+
+.container-fluid {
+    width: 100%;
+    padding: 0 0.75rem;
+    margin: 0 auto;
+}
+
+body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--light-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: var(--text);
+    font-size: var(--fs-md);
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
+main {
+    /* With container-fluid padding this gives a 32px edge on desktop, 16px on phones */
+    margin: 0 1.25rem;
+    flex: 1;
+    padding-bottom: 1rem;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary);
+    color: var(--on-primary);
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ========================================
+   Loading Skeleton with Shimmer
+   ======================================== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--light-bg);
+    z-index: 9999;
+    transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease);
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.skeleton-container {
+    margin: 0 auto;
+    padding: 0.75rem 2rem;
+}
+
+.shimmer {
+    background: linear-gradient(90deg, var(--card-bg) 25%, var(--border) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-search, .skeleton-filters {
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+}
+
+.skeleton-search { height: 48px; }
+.skeleton-filters { height: 120px; }
+
+.skeleton-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.skeleton-card {
+    height: 180px;
+    border-radius: var(--radius-md);
+}
+
+/* Icon button: borderless fill, one style for toolbar and cards; 34px, 28px on cards, 36px on touch */
+.btn-toolbar,
+.btn-card-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.55rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: var(--fs-md);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+/* Toolbar buttons sit on the page, so they use the card color */
+.btn-toolbar {
+    background: var(--card-bg);
+    white-space: nowrap;
+}
+
+/* Card buttons sit on a card, so they use a light wash instead of a darker well */
+.btn-card-action {
+    min-width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: var(--fs-sm);
+    background: var(--chip-bg);
+}
+
+.btn-toolbar:hover,
+.btn-card-action:hover {
+    color: var(--link);
+}
+
+.btn-toolbar:hover {
+    background: var(--border);
+}
+
+.btn-card-action:hover {
+    background: var(--chip-hover);
+}
+
+.btn-toolbar:focus-visible,
+.btn-card-action:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Copy/share confirmation */
+.is-success,
+.is-success:hover {
+    background: var(--success);
+    color: var(--on-success);
+}
+
+@media (pointer: coarse) {
+    .btn-toolbar,
+    .list-item .btn-card-action {
+        min-width: 36px;
+        height: 36px;
+        font-size: var(--fs-lg);
+    }
+}
+
+/* ========================================
+   Search Box
+   ======================================== */
+.search-wrapper {
+    position: relative;
+    max-width: 700px;
+    margin: 0.75rem auto 0;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-count);
+    font-size: var(--fs-lg);
+    pointer-events: none;
+    z-index: 1;
+}
+
+#search {
+    display: block;
+    width: 100%;
+    appearance: none;
+    line-height: 1.5;
+    padding: 0.5rem 2.75rem 0.5rem 2.5rem;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-md);
+    transition: box-shadow var(--dur-fast) var(--ease);
+    box-shadow: var(--shadow-sm);
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+#search::placeholder {
+    color: var(--text-count);
+    opacity: 1;
+}
+
+#search:focus {
+    outline: none;
+    /* Thin 1px highlight; --link keeps it visible at that width */
+    box-shadow: 0 0 0 1px var(--link);
+}
+
+.btn-clear-search {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-count);
+    font-size: var(--fs-lg);
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color var(--dur-fast) var(--ease);
+    z-index: 2;
+}
+
+.btn-clear-search:hover {
+    color: var(--danger);
+}
+
+/* "/" shortcut hint; hidden once the field is focused or has text */
+.keyboard-hint {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+    color: var(--text-count);
+    font-family: inherit;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+}
+
+#search:focus ~ .keyboard-hint {
+    opacity: 0;
+}
+
+#search:not(:placeholder-shown) ~ .keyboard-hint {
+    opacity: 0;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    animation: slideDown var(--dur) var(--ease);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.autocomplete-item {
+    padding: 0.65rem 1rem;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
+    border-bottom: 1px solid var(--border);
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: var(--light-bg);
+}
+
+.autocomplete-item strong {
+    color: var(--link);
+    font-weight: 600;
+}
+
+/* Active Filter Chips */
+.active-chips {
+    margin: 0.5rem auto 0;
+    padding: 0.5rem 0.75rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    animation: slideDown var(--dur) var(--ease);
+}
+
+.chips-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    background: var(--chip-bg);
+    color: var(--text);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    animation: chipIn var(--dur) var(--ease);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease);
+}
+
+.filter-chip:hover {
+    background: var(--chip-hover);
+}
+
+@keyframes chipIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.btn-clear-all {
+    background: var(--danger-bg);
+    color: var(--danger-fg);
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-clear-all:hover {
+    background: var(--danger-bg-hover);
+    color: var(--danger-fg-hover);
+}
+
+/* Toolbar */
+.toolbar {
+    margin: 1.25rem auto 0;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Filter Box */
+.filter-box {
+    padding: 0.25rem 0;
+    margin: 0.5rem 0 0;
+}
+
+.filter-item {
+    margin-bottom: 0.5rem;
+}
+
+.filter-item:last-child {
+    margin-bottom: 0;
+}
+
+.filter-item .title {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--text-count);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+summary.title {
+    cursor: pointer;
+    padding: 0.25rem 0;
+}
+
+summary.title:hover,
+summary.title:focus-visible {
+    color: var(--text);
+}
+
+/* Tag: one component for filter buttons and card tags */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    margin: 2px;
+    padding: 0.15rem 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    background: var(--tag-bg);
+    color: var(--tag-fg);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.tag:hover {
+    border-color: var(--tag-solid);
+}
+
+.tag:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.tag.active {
+    background: var(--tag-active-bg);
+    border-color: var(--tag-solid);
+    color: var(--tag-active-fg);
+}
+
+.tag-technique { --tag-bg: var(--technique-bg); --tag-fg: var(--technique-fg); --tag-solid: var(--technique-color); --tag-active-bg: var(--technique-active-bg); --tag-active-fg: var(--technique-active-fg); }
+.tag-category { --tag-bg: var(--category-bg); --tag-fg: var(--category-fg); --tag-solid: var(--category-color); --tag-active-bg: var(--category-active-bg); --tag-active-fg: var(--category-active-fg); }
+.tag-target { --tag-bg: var(--target-bg); --tag-fg: var(--target-fg); --tag-solid: var(--target-color); --tag-active-bg: var(--target-active-bg); --tag-active-fg: var(--target-active-fg); }
+
+/* Card tags: smaller, quieter badges than the filter pills; hover and active come from .tag */
+#dataList .tag {
+    margin: 0 0.25rem 0.25rem 0;
+    padding: 0 0.45rem;
+    font-weight: 500;
+}
+
+@media (pointer: coarse) {
+    #filters .tag { min-height: 32px; }
+}
+
+/* Results Info */
+.results-info {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.25rem;
+    color: var(--text);
+    font-size: var(--fs-xs);
+}
+
+.results-info strong {
+    color: var(--link);
+    font-weight: 700;
+    font-size: var(--fs-md);
+    padding: 0 0.15rem;
+}
+
+/* Recently Viewed: sits on the page like the filter panel; heading matches the filter section labels, items are neutral pills */
+.recently-viewed {
+    margin: 0 0 0.6rem;
+    animation: slideDown var(--dur) var(--ease);
+}
+
+.recently-viewed h6 {
+    margin: 0 0 0.35rem 0;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-count);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.recent-items {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.recent-item {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.75rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    white-space: nowrap;
+}
+
+.recent-item:hover {
+    background: var(--border);
+    color: var(--link);
+}
+
+.recent-item:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+/* Tool Cards */
+.lists {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.6rem;
+}
+
+.list-item {
+    padding: 0.75rem;
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    transition: box-shadow var(--dur) var(--ease);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    overflow: hidden;
+    opacity: 0;
+    animation: cardFadeIn var(--dur) var(--ease) forwards;
+}
+
+.list-item:hover,
+.list-item:focus-within {
+    box-shadow: var(--shadow-lg);
+}
+
+@keyframes cardFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.list-item .title {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Only the title, URL and source button open links; the rest of the card is not clickable */
+.list-item .title-link {
+    color: inherit;
+    font-size: inherit;
+    text-decoration: none;
+}
+
+.list-item .title-link:hover {
+    text-decoration: underline;
+}
+
+.list-item .title-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Secondary to the title: muted until hovered */
+.list-item .card-url {
+    align-self: flex-start;
+    color: var(--text-count);
+    text-decoration: none;
+    font-size: var(--fs-xs);
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.list-item .card-url:hover {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.list-item .card-url:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.external-icon {
+    font-size: var(--fs-xs);
+    opacity: 0.6;
+}
+
+/* Two lines at rest, full text on hover. line-clamp can't animate, so height does
+   (to auto via interpolate-size) and a fade on the last line replaces the ellipsis */
+.description {
+    font-size: var(--fs-sm);
+    color: var(--text-count);
+    line-height: 1.6;
+    height: calc(1.6em * 2);
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1em), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 1em), transparent);
+    transition: height var(--dur) var(--ease);
+}
+
+.list-item:hover .description,
+.list-item:focus-within .description {
+    height: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* No Results */
+.no-results {
+    padding: 3rem 1rem;
+}
+
+.empty-state {
+    text-align: center;
+}
+
+.empty-state h4 {
+    font-size: var(--fs-xl);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: var(--text-count);
+    margin-bottom: 1.5rem;
+}
+
+/* Back to Top */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: var(--on-primary);
+    border: none;
+    border-radius: 50%;
+    font-size: var(--fs-xl);
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur) var(--ease), visibility var(--dur) var(--ease), background-color var(--dur-fast) var(--ease);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.btn-back-to-top:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .lists { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+
+@media (max-width: 992px) {
+    .lists { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+    main { margin: 0 0.25rem; }
+    .search-wrapper { margin: 0.5rem auto 0; }
+    #search { font-size: var(--fs-lg); padding: 0.45rem 2.5rem 0.45rem 2.25rem; }
+    .search-icon { width: 38px; }
+    .keyboard-hint { display: none; }
+    .filter-item { margin-bottom: 0.35rem; }
+    .filter-item .title { margin-bottom: 0.3rem; }
+    .lists { grid-template-columns: 1fr; }
+    .btn-back-to-top { width: 42px; height: 42px; bottom: 20px; right: 20px; font-size: var(--fs-lg); }
+    .toolbar { margin-top: 1rem; }
+}
+
+/* Smooth Scrolling */
+html { scroll-behavior: smooth; }
+
+/* Selection */
+::selection {
+    background-color: var(--focus-ring);
+    color: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+@supports not selector(::-webkit-scrollbar) {
+    html { scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent; }
+}
+::-webkit-scrollbar-track { background: var(--light-bg); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--radius-pill); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-count); }
+

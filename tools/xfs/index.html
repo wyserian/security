@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XFS / Clickjacking Test</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#ffffff; --text:#1c2330; --muted:#5b6474;
+    --border:#e2e6ec; --accent:#2a6df0; --ok:#0a7d33; --warn:#b4690e; --bad:#c23030;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text); height:100vh; overflow:hidden;
+    display:flex; flex-direction:column;
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  header{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--panel)}
+  h1{margin:0;font-size:16px;font-weight:600;display:inline}
+  header span{color:var(--muted);font-size:12.5px;margin-left:10px}
+  .controls{
+    display:flex;flex-wrap:nowrap;gap:8px;align-items:center;
+    padding:10px 16px;border-bottom:1px solid var(--border);background:var(--panel);
+  }
+  input[type=url]{
+    flex:1 1 auto;min-width:0;padding:6px 10px;border:1px solid var(--border);
+    border-radius:6px;font:inherit;color:var(--text);background:#fff;
+  }
+  input[type=url]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(42,109,240,.15)}
+  button{
+    padding:6px 11px;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    border-radius:6px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;
+  }
+  button:hover{background:#1f5fd6}
+  button.ghost{background:#fff;color:var(--text);border-color:var(--border)}
+  button.ghost:hover{background:#f0f2f5}
+  .opt{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;white-space:nowrap}
+  .opt input[type=range]{width:90px;accent-color:var(--accent)}
+  #status{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:7px 16px;border-top:1px solid var(--border);border-left:4px solid var(--border);
+    background:var(--panel);font-size:13px;color:var(--muted);
+  }
+  #status #msg{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #status .meta{color:var(--muted);font-size:12px;white-space:nowrap;flex:0 0 auto}
+  #status.ok{border-left-color:var(--bad)}      /* framed = vulnerable */
+  #status.safe{border-left-color:var(--ok)}
+  #status.wait{border-left-color:var(--warn)}
+  #status b{color:var(--text)}
+  .stage{position:relative;flex:1 1 auto;min-height:0;background:#fff}
+  #frame{display:block;width:100%;height:100%;border:0;background:#fff}
+  #decoy{
+    position:absolute;inset:0;display:none;pointer-events:none;background:transparent;
+  }
+  #decoy.on{display:block}
+  #decoy .bait{
+    position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+    padding:34px 90px;border:1px solid rgba(0,0,0,.18);border-radius:10px;
+    background:rgba(255,255,255,.32);font-weight:600;font-size:22px;color:var(--text);
+    box-shadow:0 2px 16px rgba(0,0,0,.10)
+  }
+  #decoy .note{position:absolute;left:12px;bottom:10px;color:var(--muted);font-size:11.5px}
+  code{background:#eef1f5;padding:1px 4px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>XFS / Clickjacking Test</h1>
+</header>
+
+<form class="controls" onsubmit="return load()">
+  <input id="url" type="url" placeholder="https://example.com" required>
+  <button type="submit">Load</button>
+  <button type="button" class="ghost" id="cjBtn">Clickjacking overlay</button>
+  <label class="opt">opacity
+    <input id="op" type="range" min="0.1" max="1" step="0.05" value="0.5">
+    <span id="opv">0.50</span>
+  </label>
+</form>
+
+<div class="stage">
+  <iframe id="frame" referrerpolicy="no-referrer" title="framed target"></iframe>
+  <div id="decoy">
+    <div class="bait">Clickjacking</div>
+    <div class="note">Decoy overlay: the invisible target button sits under this bait. Lower opacity to see the alignment.</div>
+  </div>
+</div>
+
+<div id="status">
+  <span id="msg">Enter a URL and press <b>Load</b>. If it renders it can be framed; if blank, framing is blocked.</span>
+  <span class="meta">Checks for <code>X-Frame-Options</code> / CSP <code>frame-ancestors</code>.</span>
+</div>
+
+<script>
+  const frame=document.getElementById('frame'), status=document.getElementById('status');
+  const urlIn=document.getElementById('url'), op=document.getElementById('op'), opv=document.getElementById('opv');
+  const decoy=document.getElementById('decoy');
+
+  frame.style.opacity=op.value;                 // apply default opacity on load
+
+  function setStatus(cls,html){ status.className=cls; document.getElementById('msg').innerHTML=html; }
+
+  op.addEventListener('input',()=>{ frame.style.opacity=op.value; opv.textContent=(+op.value).toFixed(2); });
+
+  document.getElementById('cjBtn').addEventListener('click',()=>{
+    decoy.classList.toggle('on');
+    if(decoy.classList.contains('on') && op.value>0.85){ op.value=0.35; op.dispatchEvent(new Event('input')); }
+  });
+
+  async function headerCheck(url){
+    try{
+      const r=await fetch(url,{method:'GET',mode:'cors'});
+      const xfo=r.headers.get('x-frame-options');
+      const csp=r.headers.get('content-security-policy')||'';
+      const fa=(csp.match(/frame-ancestors[^;]*/i)||[])[0];
+      if(xfo||fa) return {v:'protected',d:`${xfo?'X-Frame-Options: '+xfo:''}${xfo&&fa?' | ':''}${fa||''}`};
+      return {v:'open',d:'no X-Frame-Options and no CSP frame-ancestors'};
+    }catch(e){ return {v:'unknown',d:'headers unreadable (CORS) - judge from the frame below'}; }
+  }
+
+  function load(){
+    const url=urlIn.value.trim(); if(!url) return false;
+    setStatus('wait','Loading <b>'+url+'</b> ...');
+    frame.onload=null; frame.src='about:blank';
+    setTimeout(()=>{ frame.src=url; },150);
+    headerCheck(url).then(h=>{
+      if(h.v==='protected') setStatus('safe','<b>Framing blocked</b> - '+h.d+'. Frame should be blank.');
+      else if(h.v==='open') setStatus('ok','<b>Framable</b> - '+h.d+'. If it renders, clickjacking is likely possible.');
+      else setStatus('wait','If it renders below it can be framed; if blank, framing is blocked.');
+    });
+    return false;
+  }
+</script>
+</body>
+</html>
